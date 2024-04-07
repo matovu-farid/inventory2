@@ -6,19 +6,29 @@ import Home from './screens/home'
 import Wrappers from './wrappers'
 import { isSignedIn } from './signals/signedIn'
 import Signin from './screens/signin'
+import Signup from './screens/signup'
+import ErrorPage from './screens/error-page'
 
 const router = createBrowserRouter([
     {
         path: '/',
-        element: isSignedIn.value ? <Home /> : <Signin />
+        element: isSignedIn.value ? <Home /> : <Signin />,
+        errorElement: <ErrorPage />
     },
     {
         path: '/signin',
-        element: <div>Sign In</div>
+        element: <Signin />,
+        errorElement: <ErrorPage />
+    },
+    {
+        path: '/signup',
+        element: <Signup />,
+        errorElement: <ErrorPage />
     },
     {
         path: '/home',
-        element: <Home />
+        element: <Home />,
+        errorElement: <ErrorPage />
     }
 ])
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(

@@ -2,7 +2,6 @@ import { HashLoader } from 'react-spinners'
 import { isSignedIn } from '../signals/signedIn'
 
 function Home() {
-    
     if (!isSignedIn.value) {
         return (
             <div className="h-screen w-full grid place-items-center">
