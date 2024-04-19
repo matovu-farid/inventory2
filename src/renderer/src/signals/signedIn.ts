@@ -1,4 +1,4 @@
-import { computed } from '@preact/signals-react'
-import { user } from './firebaseApp'
+import { computed, signal } from '@preact/signals-react'
+import { firebaseApp, user } from './firebaseApp'
 
-export const isSignedIn = computed(() => !!user.value?.uid)
+export const isSignedIn = signal(() => firebaseApp.auth.currentUser !== null)

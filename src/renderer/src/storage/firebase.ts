@@ -9,7 +9,12 @@ import {
     deleteDoc,
     setDoc
 } from 'firebase/firestore/lite'
-import { Auth, getAuth, signInWithEmailAndPassword } from 'firebase/auth'
+import {
+    Auth,
+    createUserWithEmailAndPassword,
+    getAuth,
+    signInWithEmailAndPassword
+} from 'firebase/auth'
 
 import Storage from './storage'
 import { Collections } from './collections'
@@ -82,6 +87,19 @@ export default class FirebaseStorage extends Storage {
         const uid = credentials.user.uid
         return uid
     }
+
+    async registerCustomer(customer: Customer): Promise<string> {
+        if (!customer.password) throw new Error('Password is required')
+        const credentials = await createUserWithEmailAndPassword(
+            this.auth,
+            customer.email,
+            customer.password
+        )
+
+        const uid = credentials.user.uid
+        return uid
+    }
+
     async createInventoryItem(item: InventoryItem): Promise<void> {
         const uid = this.getUid()
 

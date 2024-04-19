@@ -1,5 +1,7 @@
+import { signUp } from '@renderer/signals/firebaseApp'
 import { useForm, SubmitHandler } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 type Inputs = {
     email: string
@@ -12,7 +14,18 @@ export default function Signup() {
         handleSubmit,
         formState: { errors }
     } = useForm<Inputs>()
-    const onSubmit: SubmitHandler<Inputs> = (data) => console.log(data)
+    const navigate = useNavigate()
+
+    const onSubmit: SubmitHandler<Inputs> = async (data) => {
+        try {
+            await signUp(data)
+            toast.success('Sign up successful')
+            navigate('/')
+        } catch (error: any) {
+            console.error(error)
+            toast.error('Sign up failed. Please try again.')
+        }
+    }
 
     return (
         <>
@@ -47,7 +60,11 @@ export default function Signup() {
                                         }
                                     })}
                                 />
-                                {errors.email && <span>{errors.email.message}</span>}
+                                {errors.email && (
+                                    <span className="text-pink-400 text-sm">
+                                        {errors.email.message}
+                                    </span>
+                                )}
                             </div>
                         </div>
 
@@ -75,15 +92,20 @@ export default function Signup() {
                                     autoComplete="current-password"
                                     required
                                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                    {...register('password', { required: 'Password is required' })}
+                                    {...register('password', {
+                                        required: 'Password is required',
+                                        minLength: {
+                                            value: 6,
+                                            message: 'Password should have at least 6 characters'
+                                        }
+                                    })}
                                 />
-                                {errors.password && <span>{errors.password.message}</span>}
+                                {errors.password && (
+                                    <span className="text-pink-400 text-sm">
+                                        {errors.password.message}
+                                    </span>
+                                )}
                             </div>
-                        </div>
-                        <div className="flex justify-center">
-                            <Link to={'/signin'} className="text-indigo-600">
-                                Sign in
-                            </Link>
                         </div>
 
                         <div>
@@ -93,6 +115,11 @@ export default function Signup() {
                             >
                                 Sign up
                             </button>
+                        </div>
+                        <div className="flex justify-center">
+                            <Link to={'/signin'} className="text-indigo-600">
+                                Sign in
+                            </Link>
                         </div>
                     </form>
                 </div>

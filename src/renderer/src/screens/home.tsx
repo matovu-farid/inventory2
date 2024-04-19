@@ -1,7 +1,17 @@
 import { HashLoader } from 'react-spinners'
 import { isSignedIn } from '../signals/signedIn'
+import { user } from '@renderer/signals/firebaseApp'
+import { useNavigate } from 'react-router-dom'
+import { effect } from '@preact/signals-react'
+import InventoryTable from '@renderer/components/inventory_table'
 
 function Home() {
+    const navigate = useNavigate()
+    effect(() => {
+        if (!isSignedIn.value) {
+            navigate('/signin')
+        }
+    })
     if (!isSignedIn.value) {
         return (
             <div className="h-screen w-full grid place-items-center">
@@ -18,8 +28,7 @@ function Home() {
 
     return (
         <div>
-            <h1>React + Typescript</h1>
-            <p className="bg-red-500">This is insane</p>
+            <InventoryTable />
         </div>
     )
 }
