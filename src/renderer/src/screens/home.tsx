@@ -1,17 +1,20 @@
 import { HashLoader } from 'react-spinners'
 import { isSignedIn } from '../signals/signedIn'
-import { user } from '@renderer/signals/firebaseApp'
+import { firebaseApp, user } from '@renderer/signals/firebaseApp'
 import { useNavigate } from 'react-router-dom'
 import { effect } from '@preact/signals-react'
 import InventoryTable from '@renderer/components/inventory_table'
+import { Button } from '@mui/material'
+import { useEffect } from 'react'
 
 function Home() {
     const navigate = useNavigate()
-    effect(() => {
-        if (!isSignedIn.value) {
+
+    useEffect(() => {
+        if (firebaseApp.auth.currentUser === null) {
             navigate('/signin')
         }
-    })
+    }, [])
     if (!isSignedIn.value) {
         return (
             <div className="h-screen w-full grid place-items-center">
@@ -27,7 +30,21 @@ function Home() {
     }
 
     return (
-        <div>
+        <div className="p-5">
+            <div className="flex justify-end">
+                <Button
+                    onClick={() => {
+                        firebaseApp.signOut().then(() => {
+                            navigate('/signin')
+                        })
+                    }}
+                    variant="contained"
+                    color="error"
+                >
+                    {' '}
+                    Signout{' '}
+                </Button>
+            </div>
             <InventoryTable />
         </div>
     )

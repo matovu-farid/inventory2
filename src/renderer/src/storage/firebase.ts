@@ -1,19 +1,25 @@
 import { FirebaseApp } from 'firebase/app'
 import {
-    getFirestore,
     collection,
     getDocs,
     Firestore,
     getDoc,
     doc,
     deleteDoc,
-    setDoc
+    setDoc,
+    getFirestore
 } from 'firebase/firestore/lite'
 import {
     Auth,
+    browserLocalPersistence,
     createUserWithEmailAndPassword,
+    EmailAuthCredential,
+    EmailAuthProvider,
     getAuth,
-    signInWithEmailAndPassword
+    setPersistence,
+    signInWithCredential,
+    signInWithEmailAndPassword,
+    reauthenticateWithCredential
 } from 'firebase/auth'
 
 import Storage from './storage'
@@ -32,7 +38,32 @@ export default class FirebaseStorage extends Storage {
         // Initialize Firebase
         this.app = initializedFirebaseApp
         this.db = getFirestore(this.app)
+
         this.auth = getAuth(this.app)
+        setPersistence(this.auth, browserLocalPersistence)
+        this.initUser()
+    }
+
+    async signOut() {
+        await this.auth.signOut()
+        localStorage.removeItem('credentials')
+    }
+    async initUser() {
+        const emailCredentialsString = localStorage.getItem('credentials')
+
+        if (!emailCredentialsString) return
+        const emailCredentials = EmailAuthCredential.fromJSON(emailCredentialsString)
+        if (!emailCredentials) return
+        await signInWithCredential(this.auth, emailCredentials)
+        const userKey = Object.keys(window.localStorage).filter((it) =>
+            it.startsWith('firebase:authUser')
+        )[0]
+        const userString = localStorage.getItem(userKey)
+        if (!userString) return
+        const user = this.auth.currentUser
+        if (!user) return
+
+        await reauthenticateWithCredential(user, emailCredentials)
     }
     async getCustomer(): Promise<Customer | null> {
         const user = this.auth.currentUser
@@ -77,13 +108,29 @@ export default class FirebaseStorage extends Storage {
         const parsedData = Unit.scheme.parse(data)
         return Unit.fromObject(parsedData)
     }
+
+    async getUnits(): Promise<Unit[]> {
+        const collectionRef = collection(this.db, Collections.UNIT)
+        const querySnapshot = await getDocs(collectionRef)
+        const units: Unit[] = []
+        for (const doc of querySnapshot.docs) {
+            const data = doc.data()
+            const parsedData = Unit.scheme.parse(data)
+            units.push(Unit.fromObject(parsedData))
+        }
+        return units
+    }
+
     async createCustomer(customer: Customer): Promise<string> {
         if (!customer.password) throw new Error('Password is required')
-        const credentials = await signInWithEmailAndPassword(
-            this.auth,
-            customer.email,
-            customer.password
-        )
+
+        const credentials = await setPersistence(this.auth, browserLocalPersistence).then(() => {
+            return signInWithEmailAndPassword(this.auth, customer.email, customer.password!)
+        })
+
+        const authCredential = EmailAuthProvider.credential(customer.email, customer.password!)
+
+        localStorage.setItem('credentials', JSON.stringify(authCredential))
         const uid = credentials.user.uid
         return uid
     }

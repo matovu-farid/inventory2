@@ -1,4 +1,5 @@
-import { signIn, signUp } from '@renderer/signals/firebaseApp'
+import { firebaseApp, signIn, signUp } from '@renderer/signals/firebaseApp'
+import { useEffect } from 'react'
 import { useForm, SubmitHandler } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -26,6 +27,13 @@ export default function Signin() {
             toast.error('Sign in failed. Please try again.')
         }
     }
+    useEffect(() => {
+        firebaseApp.initUser().then(() => {
+            if (firebaseApp.auth.currentUser !== null) {
+                navigate('/home')
+            }
+        })
+    })
 
     return (
         <>

@@ -15,6 +15,9 @@ import CloseIcon from '@mui/icons-material/Close'
 import InventoryItem from '@renderer/models/inventoryItem'
 import Unit from '@renderer/models/unit'
 import { useState } from 'react'
+import { firebaseApp } from '@renderer/signals/firebaseApp'
+import { useQuery } from '@tanstack/react-query'
+import FirebaseStorage from '@renderer/storage/firebase'
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -40,7 +43,17 @@ const items = [
 ]
 export default function InventoryTable() {
     const [open, setOpen] = useState(false)
-    const [unit, setUnit] = useState<Unit>(null)
+    const [selectedUnitId, setSelectedUnitId] = useState<string>('')
+    const {
+        isError,
+        isPending,
+        data: units,
+        error: unitError
+    } = useQuery({ queryKey: ['units'], queryFn: () => firebaseApp.getUnits() })
+    if (isError) {
+        console.error(unitError)
+    }
+
     return (
         <div className="p-4 sm:px-6 lg:px-8">
             <div className="sm:flex sm:items-center">
@@ -83,20 +96,28 @@ export default function InventoryTable() {
                             >
                                 <CloseIcon />
                             </IconButton>
-                            <DialogContent dividers>
+                            <DialogContent className="grid gap-2" dividers>
                                 <TextField id="outlined-basic" label="Name" variant="outlined" />
                                 <FormControl fullWidth>
                                     <InputLabel id="demo-simple-select-label">Unit</InputLabel>
                                     <Select
                                         labelId="demo-simple-select-label"
                                         id="demo-simple-select"
-                                        value={unit}
+                                        value={selectedUnitId}
                                         label="Age"
-                                        onChange={(val) => setUnit(val)}
+                                        onChange={(e) => {
+                                            setSelectedUnitId(e.target.value)
+                                        }}
                                     >
-                                        <MenuItem value={10}>Ten</MenuItem>
-                                        <MenuItem value={20}>Twenty</MenuItem>
-                                        <MenuItem value={30}>Thirty</MenuItem>
+                                        {isError && (
+                                            <MenuItem value="">Error: {unitError.message}</MenuItem>
+                                        )}
+                                        {isPending && <MenuItem value="">Loading...</MenuItem>}
+                                        {units?.map((unit) => (
+                                            <MenuItem key={unit.id} value={unit.id}>
+                                                {unit.name}
+                                            </MenuItem>
+                                        ))}
                                     </Select>
                                 </FormControl>
                             </DialogContent>
