@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import AddItemDialog from './AddItemDialog'
 import { HashLoader } from 'react-spinners'
 import InventoryItem from '@renderer/models/inventoryItem'
+import toCurrency from '@renderer/utils/toCurrency'
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -35,7 +36,6 @@ export default function InventoryTable() {
     }
 
     if (isError) {
-        console.log({ inventoryItemsError })
         return (
             <div className="w-full h-full grid justify-center">Failed to load inventory items</div>
         )
@@ -186,7 +186,7 @@ export default function InventoryTable() {
                                                 'whitespace-nowrap px-3 py-4 text-sm text-gray-500'
                                             )}
                                         >
-                                            {item.amount * item.price}
+                                            {toCurrency(item.amount * item.price)}
                                         </td>
                                         <td
                                             className={classNames(

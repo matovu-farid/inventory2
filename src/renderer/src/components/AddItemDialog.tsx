@@ -52,12 +52,6 @@ export default function AddItemDialog({
             price
         }
     })
-    console.log({
-        name,
-        unitId,
-        numberOfPacks,
-        price
-    })
 
     const queryClient = useQueryClient()
 
@@ -133,7 +127,6 @@ export default function AddItemDialog({
                             id="unit"
                             defaultValue={unitId}
                             label="Unit"
-                     
                         >
                             {isError && <MenuItem value="">Error: {unitError.message}</MenuItem>}
                             {isPending && <MenuItem value="">Loading...</MenuItem>}
