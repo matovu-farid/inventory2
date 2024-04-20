@@ -7,7 +7,8 @@ import {
     doc,
     deleteDoc,
     setDoc,
-    getFirestore
+    getFirestore,
+    addDoc
 } from 'firebase/firestore/lite'
 import {
     Auth,
@@ -25,7 +26,7 @@ import {
 import Storage from './storage'
 import { Collections } from './collections'
 import Customer from '@renderer/models/customer'
-import InventoryItem from '@renderer/models/inventoryItem'
+import InventoryItem, { InventoryItemToSave } from '@renderer/models/inventoryItem'
 import Unit from '@renderer/models/unit'
 import { initializedFirebaseApp } from '@renderer/exclude/firebase_init'
 
@@ -84,7 +85,7 @@ export default class FirebaseStorage extends Storage {
 
     async getInventoryItem(id: string): Promise<InventoryItem> {
         const uid = this.getUid()
-        const docRef = doc(this.db, uid, Collections.INVETORY, id)
+        const docRef = doc(this.db, Collections.USERS, uid, Collections.INVETORY, id)
         const docSnapshot = await getDoc(docRef)
         if (!docSnapshot.exists) {
             throw new Error('Inventory Item not found')
@@ -147,18 +148,22 @@ export default class FirebaseStorage extends Storage {
         return uid
     }
 
-    async createInventoryItem(item: InventoryItem): Promise<void> {
+    async createInventoryItem(item: InventoryItemToSave): Promise<void> {
         const uid = this.getUid()
 
         const data = { ...item, unit: item.unit.id }
-        await setDoc(doc(this.db, uid, Collections.INVETORY), data)
+        await addDoc(collection(this.db, Collections.USERS, uid, Collections.INVETORY), data)
     }
 
     async updateInventoryItem(item: InventoryItem): Promise<void> {
         const uid = this.getUid()
-        await setDoc(doc(this.db, uid, Collections.INVETORY, item.id), item.toObject(), {
-            merge: true
-        })
+        await setDoc(
+            doc(this.db, Collections.USERS, uid, Collections.INVETORY, item.id),
+            item.toObject(),
+            {
+                merge: true
+            }
+        )
     }
 
     async deleteCustomer(): Promise<void> {
@@ -171,12 +176,20 @@ export default class FirebaseStorage extends Storage {
         await deleteDoc(docRef)
     }
 
-    async getInventoryItems(uid: string): Promise<InventoryItem[]> {
-        const collectionRef = collection(this.db, uid, Collections.INVETORY)
+    async getInventoryItems(): Promise<InventoryItem[]> {
+        const collectionRef = collection(
+            this.db,
+            Collections.USERS,
+            this.getUid(),
+            Collections.INVETORY
+        )
         const querySnapshot = await getDocs(collectionRef)
+      
         const items: InventoryItem[] = []
         for (const doc of querySnapshot.docs) {
             const data = doc.data()
+            data.id = doc.id
+
             const unit = await this.getUnit(data.unit)
             data.unit = unit
             const parsedData = InventoryItem.scheme.parse(data)

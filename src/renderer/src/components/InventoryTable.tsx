@@ -18,40 +18,41 @@ import { useState } from 'react'
 import { firebaseApp } from '@renderer/signals/firebaseApp'
 import { useQuery } from '@tanstack/react-query'
 import FirebaseStorage from '@renderer/storage/firebase'
+import AddItemDialog from './AddItemDialog'
+import { HashLoader } from 'react-spinners'
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-const items = [
-    new InventoryItem({
-        name: 'Item 1',
-        price: 100,
-        amount: 10,
-        unit: new Unit({ name: 'Unit 1', unitsPerPack: 10, id: '3232hjh' }),
-        createdAt: new Date(),
-        id: '13434gfgfg'
-    }),
-    new InventoryItem({
-        name: 'Item 2',
-        price: 100,
-        amount: 10,
-        unit: new Unit({ name: 'Unit 1', unitsPerPack: 10, id: '3232hjh' }),
-        createdAt: new Date(),
-        id: '45453434gfgfg'
-    })
-]
 export default function InventoryTable() {
     const [open, setOpen] = useState(false)
-    const [selectedUnitId, setSelectedUnitId] = useState<string>('')
     const {
         isError,
         isPending,
-        data: units,
-        error: unitError
-    } = useQuery({ queryKey: ['units'], queryFn: () => firebaseApp.getUnits() })
+        data: items,
+        error: inventoryItemsError
+    } = useQuery({ queryKey: ['inventoryItems'], queryFn: () => firebaseApp.getInventoryItems() })
+
+    if (isPending) {
+        return (
+            <div className="w-full h-full min-h-[50vh] grid justify-center">
+                <HashLoader
+                    color={'#123abc'}
+                    loading={true}
+                    size={75}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                />
+            </div>
+        )
+    }
+
     if (isError) {
-        console.error(unitError)
+        console.log({ inventoryItemsError })
+        return (
+            <div className="w-full h-full grid justify-center">Failed to load inventory items</div>
+        )
     }
 
     return (
@@ -72,66 +73,7 @@ export default function InventoryTable() {
                         >
                             Add Inventory Item
                         </Button>
-                        <Dialog
-                            onClose={() => {
-                                setOpen(false)
-                            }}
-                            aria-labelledby="customized-dialog-title"
-                            open={open}
-                        >
-                            <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
-                                Add Inventory Item
-                            </DialogTitle>
-                            <IconButton
-                                aria-label="close"
-                                onClick={() => {
-                                    setOpen(false)
-                                }}
-                                sx={{
-                                    position: 'absolute',
-                                    right: 8,
-                                    top: 8,
-                                    color: (theme) => theme.palette.grey[500]
-                                }}
-                            >
-                                <CloseIcon />
-                            </IconButton>
-                            <DialogContent className="grid gap-2" dividers>
-                                <TextField id="outlined-basic" label="Name" variant="outlined" />
-                                <FormControl fullWidth>
-                                    <InputLabel id="demo-simple-select-label">Unit</InputLabel>
-                                    <Select
-                                        labelId="demo-simple-select-label"
-                                        id="demo-simple-select"
-                                        value={selectedUnitId}
-                                        label="Age"
-                                        onChange={(e) => {
-                                            setSelectedUnitId(e.target.value)
-                                        }}
-                                    >
-                                        {isError && (
-                                            <MenuItem value="">Error: {unitError.message}</MenuItem>
-                                        )}
-                                        {isPending && <MenuItem value="">Loading...</MenuItem>}
-                                        {units?.map((unit) => (
-                                            <MenuItem key={unit.id} value={unit.id}>
-                                                {unit.name}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-                            </DialogContent>
-                            <DialogActions>
-                                <Button
-                                    autoFocus
-                                    onClick={() => {
-                                        setOpen(false)
-                                    }}
-                                >
-                                    Save changes
-                                </Button>
-                            </DialogActions>
-                        </Dialog>
+                        <AddItemDialog open={open} setOpen={setOpen} />
                     </>
                 </div>
             </div>

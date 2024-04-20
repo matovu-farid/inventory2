@@ -3,7 +3,6 @@ import { z } from 'zod'
 
 interface InventoryItemObject {
     name: string
-    createdAt: Date
     unit: UnitObject
     id: string
     price: number
@@ -14,14 +13,12 @@ type InventoryProp = Omit<InventoryItemObject, 'unit'> & { unit: Unit }
 
 export default class InventoryItem {
     name: string
-    createdAt: Date
     unit: Unit
     id: string
     price: number
     amount: number
-    constructor({ name, createdAt, unit, id, price, amount }: InventoryProp) {
+    constructor({ name, unit, id, price, amount }: InventoryProp) {
         this.name = name
-        this.createdAt = createdAt
         this.unit = unit
         this.id = id
         this.price = price
@@ -31,7 +28,6 @@ export default class InventoryItem {
     toJson(): string {
         return JSON.stringify({
             name: this.name,
-            createdAt: this.createdAt,
             unit: this.unit.toJson()
         })
     }
@@ -39,7 +35,6 @@ export default class InventoryItem {
     toObject(): InventoryItemObject {
         return {
             name: this.name,
-            createdAt: this.createdAt,
             unit: this.unit.toObject(),
             id: this.id,
             price: this.price,
@@ -48,7 +43,6 @@ export default class InventoryItem {
     }
     static scheme = z.object({
         name: z.string(),
-        createdAt: z.date(),
         unit: Unit.scheme,
         id: z.string(),
         price: z.number(),
@@ -60,7 +54,6 @@ export default class InventoryItem {
 
         return new InventoryItem({
             name: obj.name,
-            createdAt: obj.createdAt,
             unit: Unit.fromObject(obj.unit),
             id: obj.id,
             price: obj.price,
@@ -68,3 +61,5 @@ export default class InventoryItem {
         })
     }
 }
+
+export type InventoryItemToSave = Omit<InventoryItemObject, 'id'>

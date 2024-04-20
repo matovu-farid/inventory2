@@ -3,7 +3,7 @@ import { isSignedIn } from '../signals/signedIn'
 import { firebaseApp, user } from '@renderer/signals/firebaseApp'
 import { useNavigate } from 'react-router-dom'
 import { effect } from '@preact/signals-react'
-import InventoryTable from '@renderer/components/inventory_table'
+import InventoryTable from '@renderer/components/InventoryTable'
 import { Button } from '@mui/material'
 import { useEffect } from 'react'
 
