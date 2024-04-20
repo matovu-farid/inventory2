@@ -26,20 +26,39 @@ type Inputs = {
     numberOfPacks: string
     price: string
 }
+
 export default function AddItemDialog({
     open,
-    setOpen
+    setOpen,
+    name = '',
+    unitId = '',
+
+    numberOfPacks = '',
+    price = ''
 }: {
     open: boolean
     setOpen: (open: boolean) => void
-}) {
-    const [selectedUnitId, setSelectedUnitId] = useState<string>('')
+} & Partial<Inputs>) {
     const {
         register,
         handleSubmit,
         watch,
         formState: { errors }
-    } = useForm<Inputs>()
+    } = useForm<Inputs>({
+        values: {
+            name,
+            unitId,
+            numberOfPacks,
+            price
+        }
+    })
+    console.log({
+        name,
+        unitId,
+        numberOfPacks,
+        price
+    })
+
     const queryClient = useQueryClient()
 
     const {
@@ -63,6 +82,7 @@ export default function AddItemDialog({
     })
     const onSubmit: SubmitHandler<Inputs> = (data) => {
         setOpen(false)
+
         const unit = units?.find((unit) => unit.id === data.unitId)
         if (!unit) return
 
@@ -104,23 +124,16 @@ export default function AddItemDialog({
             </IconButton>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <DialogContent className="grid gap-3" dividers>
-                    <TextField
-                        id="outlined-basic"
-                        label="Name"
-                        variant="outlined"
-                        {...register('name')}
-                    />
+                    <TextField id="name" label="Name" variant="outlined" {...register('name')} />
                     <FormControl fullWidth>
                         <InputLabel id="demo-simple-select-label">Unit</InputLabel>
                         <Select
                             {...register('unitId')}
                             labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            value={selectedUnitId}
-                            label="Age"
-                            onChange={(e) => {
-                                setSelectedUnitId(e.target.value)
-                            }}
+                            id="unit"
+                            defaultValue={unitId}
+                            label="Unit"
+                     
                         >
                             {isError && <MenuItem value="">Error: {unitError.message}</MenuItem>}
                             {isPending && <MenuItem value="">Loading...</MenuItem>}

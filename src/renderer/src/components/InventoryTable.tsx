@@ -4,6 +4,7 @@ import { firebaseApp } from '@renderer/signals/firebaseApp'
 import { useQuery } from '@tanstack/react-query'
 import AddItemDialog from './AddItemDialog'
 import { HashLoader } from 'react-spinners'
+import InventoryItem from '@renderer/models/inventoryItem'
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -11,6 +12,7 @@ function classNames(...classes) {
 
 export default function InventoryTable() {
     const [open, setOpen] = useState(false)
+    const [selectedItem, setSelectedItem] = useState<InventoryItem>()
     const {
         isError,
         isPending,
@@ -57,7 +59,18 @@ export default function InventoryTable() {
                         >
                             Add Inventory Item
                         </Button>
-                        <AddItemDialog open={open} setOpen={setOpen} />
+                        {selectedItem ? (
+                            <AddItemDialog
+                                open={open}
+                                setOpen={setOpen}
+                                name={selectedItem.name}
+                                unitId={selectedItem.unit.id}
+                                numberOfPacks={selectedItem.amount.toString()}
+                                price={selectedItem.price.toString()}
+                            />
+                        ) : (
+                            <AddItemDialog open={open} setOpen={setOpen} />
+                        )}
                     </>
                 </div>
             </div>
@@ -183,12 +196,15 @@ export default function InventoryTable() {
                                                 'relative whitespace-nowrap py-4 pr-4 pl-3 text-right text-sm font-medium sm:pr-8 lg:pr-8'
                                             )}
                                         >
-                                            <a
-                                                href="#"
-                                                className="text-indigo-600 hover:text-indigo-900"
+                                            <Button
+                                                variant="text"
+                                                onClick={() => {
+                                                    setSelectedItem(item)
+                                                    setOpen(true)
+                                                }}
                                             >
                                                 Edit<span className="sr-only">, {item.name}</span>
-                                            </a>
+                                            </Button>
                                         </td>
                                     </tr>
                                 ))}
