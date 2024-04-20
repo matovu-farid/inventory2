@@ -6,6 +6,7 @@ import AddItemDialog from './AddItemDialog'
 import { HashLoader } from 'react-spinners'
 import InventoryItem from '@renderer/models/inventoryItem'
 import toCurrency from '@renderer/utils/toCurrency'
+import DeleteButton from './DeleteButton'
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -17,8 +18,7 @@ export default function InventoryTable() {
     const {
         isError,
         isPending,
-        data: items,
-        error: inventoryItemsError
+        data: items
     } = useQuery({ queryKey: ['inventoryItems'], queryFn: () => firebaseApp.getInventoryItems() })
 
     if (isPending) {
@@ -122,6 +122,12 @@ export default function InventoryTable() {
                                     >
                                         <span className="sr-only">Edit</span>
                                     </th>
+                                    <th
+                                        scope="col"
+                                        className="sticky top-0 z-10 border-b border-gray-300 bg-white bg-opacity-75 py-3.5 pl-3 pr-4 backdrop-blur backdrop-filter sm:pr-6 lg:pr-8"
+                                    >
+                                        <span className="sr-only">DELETE</span>
+                                    </th>
                                 </tr>
                             </thead>
 
@@ -205,6 +211,16 @@ export default function InventoryTable() {
                                             >
                                                 Edit<span className="sr-only">, {item.name}</span>
                                             </Button>
+                                        </td>
+                                        <td
+                                            className={classNames(
+                                                itemIdx !== items.length - 1
+                                                    ? 'border-b border-gray-200'
+                                                    : '',
+                                                'relative whitespace-nowrap py-4 pr-4 pl-3 text-right text-sm font-medium sm:pr-8 lg:pr-8'
+                                            )}
+                                        >
+                                            <DeleteButton item={item} />
                                         </td>
                                     </tr>
                                 ))}

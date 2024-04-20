@@ -172,7 +172,7 @@ export default class FirebaseStorage extends Storage {
 
     async deleteInventoryItem(id: string): Promise<void> {
         const uid = this.getUid()
-        const docRef = doc(this.db, uid, Collections.INVETORY, id)
+        const docRef = doc(this.db, Collections.USERS, uid, Collections.INVETORY, id)
         await deleteDoc(docRef)
     }
 
@@ -184,7 +184,7 @@ export default class FirebaseStorage extends Storage {
             Collections.INVETORY
         )
         const querySnapshot = await getDocs(collectionRef)
-      
+
         const items: InventoryItem[] = []
         for (const doc of querySnapshot.docs) {
             const data = doc.data()
