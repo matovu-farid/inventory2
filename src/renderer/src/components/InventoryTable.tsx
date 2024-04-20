@@ -1,23 +1,7 @@
-import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    FormControl,
-    IconButton,
-    InputLabel,
-    MenuItem,
-    Select,
-    TextField
-} from '@mui/material'
-import CloseIcon from '@mui/icons-material/Close'
-import InventoryItem from '@renderer/models/inventoryItem'
-import Unit from '@renderer/models/unit'
+import { Button } from '@mui/material'
 import { useState } from 'react'
 import { firebaseApp } from '@renderer/signals/firebaseApp'
 import { useQuery } from '@tanstack/react-query'
-import FirebaseStorage from '@renderer/storage/firebase'
 import AddItemDialog from './AddItemDialog'
 import { HashLoader } from 'react-spinners'
 
